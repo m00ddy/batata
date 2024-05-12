@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+  raw_server:
+    build:
+      context: ./server
+  
+    ports:
+      - 8080:8080
+      - 4444:4444
+
+    volumes:
+      - ./server/app:/app
+    
+    environment:
+      ID: 1
+
+    mac_address: 00:22:22:22:22:22
+    networks:
+      - backend
+
+  raw_server-2:
+    build:
+      context: ./server
+  
+    ports:
+      - 8080:8080
+      - 4444:4444
+
+    volumes:
+      - ./server/app:/app
+    
+    environment:
+      ID: 2
+
+    mac_address: 00:33:33:33:33:33
+    networks:
+      - backend
+
+networks:
+  backend:
+    internal: true
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-backend
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.16.238.0/24"
