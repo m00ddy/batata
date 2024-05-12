@@ -14,6 +14,7 @@ services:
     
     environment:
       ID: 1
+      LB_MAC: ${LB_MAC}
 
     mac_address: 00:22:22:22:22:22
     networks:
@@ -32,6 +33,7 @@ services:
     
     environment:
       ID: 2
+      LB_MAC: ${LB_MAC}
 
     mac_address: 00:33:33:33:33:33
     networks:
@@ -39,11 +41,16 @@ services:
 
 networks:
   backend:
-    internal: true
-    driver: bridge
-    driver_opts:
-      com.docker.network.bridge.name: br-backend
-    ipam:
-      driver: default
-      config:
-        - subnet: "172.16.238.0/24"
+    # join existing network, (i build it earlier)
+    external: true
+
+    # old configuration
+
+    # internal: true
+    # driver: bridge
+    # driver_opts:
+    #   com.docker.network.bridge.name: br-backend
+    # ipam:
+    #   driver: default
+    #   config:
+    #     - subnet: "172.16.238.0/24"

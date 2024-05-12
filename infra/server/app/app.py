@@ -24,13 +24,14 @@ for item in mac_addresses:
     if item.family == socket.AF_PACKET:
         print("interface MAC", item.address)
         my_MAC = item.address
+        #TODO use this later in healthcheck
+        os.environ["MAC"] = my_MAC
 
 print(my_MAC)
 
 # br-backend interface MAC
 # br-backend is comm channel between server and LB
-# TODO: make LB advertise this to server
-LB_MAC = "02:42:e1:c1:e2:80"  # br-backend
+LB_MAC = os.environ["LB_MAC"] # br-backend
 enp0s3_mac  = "08:00:27:69:29:66"
 
 # recieve ethernet packets

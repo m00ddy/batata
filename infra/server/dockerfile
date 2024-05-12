@@ -13,16 +13,15 @@ RUN pip install scapy
 RUN apk add gcc python3-dev py3-psutil
 
 RUN mkdir /app
-
-WORKDIR /app
-
 COPY . /app
 
-# COPY ./app/requirements.txt /tmp/requirements.txt
-# RUN pip install -r /tmp/requirements.txt
-
+WORKDIR /app
 
 EXPOSE 8080
 EXPOSE 4444
 
-CMD [ "python3", "-m", "http.server", "4444" ]
+# make setup.sh work
+RUN chmod 755 ./setup.sh
+
+ENTRYPOINT [ "./setup.sh" ]
+CMD [ "python3", "app.py" ]
