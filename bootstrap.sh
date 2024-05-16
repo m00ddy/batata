@@ -3,6 +3,7 @@ IF_NAME="br-backend"
 # docker network up
 create_docker_network() {
   docker network create \
+    --subnet=172.16.238.0/24 \
     --internal \
     --driver=bridge \
     --opt com.docker.network.bridge.name=br-backend \
@@ -17,6 +18,7 @@ get_if_hwaddr(){
 
 cleanup(){
     docker compose -f ./infra/compose.yaml down
+    docker network rm backend
 }
 
 
@@ -27,11 +29,19 @@ export LB_MAC="$hwaddr"
 echo "br-backend MAC: $LB_MAC"
 
 # get docker containers up
-docker compose -f ./infra/compose.yaml up -d
+docker compose -f ./infra/compose.yaml up --force-recreate -d
 if [ $? -eq 0 ]; then
+    echo "running load balancer"
     (sudo python3 load-balancer.py)
 else
     echo "won't launch balancer, docker compose failed"
 fi
 
-cleanup
+read -p "Do you want to cleanup? (y/n): " choice
+
+if [ "$choice" = "y" ]; then
+    cleanup
+    echo "cleanup executed successfully."
+else
+    echo "cleanup execution skipped."
+fi

@@ -1,14 +1,8 @@
 import os
 import socket
 from scapy.all import *
-import psutil
 from protocol import *
 
-# later OP[opcode](x, y)
-OP = {
-    1: lambda x, y :x+y,
-    2: lambda x, y: x*y,
-}
 
 ID = int(os.environ["ID"])
 
@@ -17,17 +11,7 @@ interfaces = socket.if_nameindex()
 print(interfaces)
 
 # obtain MAC and IP
-my_MAC = None
-if_name = 'eth0'
-mac_addresses = psutil.net_if_addrs()[if_name]
-for item in mac_addresses:
-    if item.family == socket.AF_PACKET:
-        print("interface MAC", item.address)
-        my_MAC = item.address
-        #TODO use this later in healthcheck
-        os.environ["MAC"] = my_MAC
-
-print(my_MAC)
+my_MAC = os.environ["MAC"]
 
 # br-backend interface MAC
 # br-backend is comm channel between server and LB

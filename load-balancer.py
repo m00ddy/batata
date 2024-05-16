@@ -18,7 +18,6 @@ client_socket  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 client_socket.bind(ADDR)
 
 
-
 # check if br-backend in interfaces
 interfaces = socket.if_nameindex()
 print(interfaces)
