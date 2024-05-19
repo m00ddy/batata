@@ -3,11 +3,16 @@ import psutil
 from scapy.all import *
 from utils.roundrobin import RoundRobin
 from utils.protocol import *
+from utils.fetch_macs import *
 import select
+import threading
+
 
 HOST = "0.0.0.0"
-PORT = 8080
-ADDR = (HOST, PORT)
+UDP_SOCK_PORT = 8080
+TCP_SOCK_PORT = 7070
+UDP_ADDR = (HOST, UDP_SOCK_PORT)
+TCP_ADDR = (HOST, TCP_SOCK_PORT)
 TIMEOUT = 3
 
 ETH_P_ALL = 3  # raw socket protocol prevent kernel processing on packets
@@ -15,7 +20,7 @@ ETH_P_ALL = 3  # raw socket protocol prevent kernel processing on packets
 
 # UDP socket: client <--> load balancer
 client_socket  = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-client_socket.bind(ADDR)
+client_socket.bind(UDP_ADDR)
 
 
 # check if br-backend in interfaces
@@ -46,9 +51,14 @@ srv_socket.settimeout(TIMEOUT)
 srv_socket.bind(('br-backend', 0))
 
 
+# discovery socket: TCP load balancer <--> service register
+discovery_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 # TODO: some method of filling this list on startup?
 server_macs = ["00:22:22:22:22:22","00:33:33:33:33:33"]
 mac_rr = RoundRobin(server_macs)
+
+#TODO launch a thread that dynamically updates mac address list by querying the discovery service
 
 while True:
     print("======================")
