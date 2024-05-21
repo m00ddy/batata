@@ -1,3 +1,4 @@
+import random
 import socket
 import traceback
 import time
@@ -28,7 +29,11 @@ s.connect(('localhost', 1337))
 print("connected to register socket")
 print("starting heartbeat thread...")
 
-my_mac = os.environ.get('MAC', "11:11:11:11:11")
+# randomize macs to simulate servers
+mac_list = ["22:22:22:22:22:22","33:33:33:33:33:33", "00:00:00:00:00:00", "44:44:44:44:44:44"]
+random_mac = mac_list[random.randint(0,len(mac_list)-1)]
+
+my_mac = os.environ.get('MAC',random_mac)
 echo = beat_wrapper(s, my_mac)
 
 threading.Thread(target=lambda: every(3, echo)).start()

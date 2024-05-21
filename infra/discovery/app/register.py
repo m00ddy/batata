@@ -64,7 +64,7 @@ def main():
 def wait_for_lb_ready(conn:socket.socket, addr):
     while True:
         msg = conn.recv(2000)
-        if msg.decode() == "ready":
+        if msg.decode() == "ready" or msg.decode() == "init":
             print("[handler] client is ready for new list")
             data = json.dumps({"list": list(conn_to_mac.values())})
             print("sending", data)

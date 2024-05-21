@@ -4,27 +4,29 @@ import traceback
 import time
 import json
 import threading
-from roundrobin import RoundRobin
+from utils.roundrobin import RoundRobin
 
-DISCOVERY_IP = "127.0.0.1"
-DISCOVERY_PORT = 9999
-DISCOVERY_ADDR = (DISCOVERY_IP, DISCOVERY_PORT)
-
-# MAAAAAAAAAAAAACS
-SERVER_MACS:list = None
-
-# roundrobinrevolver object
-RR:object = None
-
-
-# thread stuff
 lock = threading.Lock()
 init_complete = threading.Event()
 
+DISCOVERY_IP = "172.16.238.100"
+DISCOVERY_PORT = 9999
+DISCOVERY_ADDR = (DISCOVERY_IP, DISCOVERY_PORT)
+
+with lock:
+    # MAAAAAAAAAAAAACS
+    SERVER_MACS = None
+
+    # roundrobinrevolver object
+    RR = None
+
+
+
 def every(delay:int,  callback:callable):
-    next_time = time.time() + delay
     global SERVER_MACS
     global RR
+
+    next_time = time.time() + delay
     while True:
         time.sleep(max(0, next_time - time.time()))
 
@@ -35,6 +37,7 @@ def every(delay:int,  callback:callable):
 
                 print("[fetcher] local list updated")
                 print(SERVER_MACS)
+                print("NEXT RR", next(RR))
                 print()
 
         except Exception as e:
@@ -57,6 +60,10 @@ def fetch_mac_list_from_register(s:socket.socket) -> callable:
 
 def init_mac_list(s: socket.socket) -> list:
     print("[fetcher] sending init")
+
+    #! backhanded approach
+    # time.sleep(2)
+
     s.send(b'init')
     msg = s.recv(2000) 
     msg = json.loads(msg.decode())
@@ -72,9 +79,7 @@ def create_mac_fetcher(s: socket.socket) -> callable:
 
     return lambda: every(interval, f)
 
-def init_consumer() -> (socket.socket, bool):
-    global SERVER_MACS
-    global RR
+def init_consumer() -> (socket.socket, list, object,bool):
 
     # connect to register
     print("creating register socket...")
@@ -83,16 +88,29 @@ def init_consumer() -> (socket.socket, bool):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(DISCOVERY_ADDR)
 
-    SERVER_MACS = init_mac_list(s)
-    RR = RoundRobin(SERVER_MACS)
 
-    print("discovery consumer init complete") 
+    server_macs = list(init_mac_list(s))
+    rr = RoundRobin(server_macs)
+
+    try:
+        print(next(rr))
+        print("[consumer]", server_macs)
+        print("[consumer]", rr)
+        print("[consumer] next rr", next(rr))
+    except Exception as e:
+        print("[consumer]", e)
+
     
-    return s, True
+    return s, server_macs, rr, True
 
-def consume_discovery_service():
-    s, ok = init_consumer()
+def consume_discovery_service() -> (bool, object, list):
+    s, server_macs, rr, ok = init_consumer()
     if ok:
+        print("discovery consumer init complete") 
+        global SERVER_MACS
+        SERVER_MACS = server_macs
+        global RR
+        RR = rr
         init_complete.set()
     
     init_complete.wait()
@@ -100,6 +118,7 @@ def consume_discovery_service():
     print("--- launching discovery consumer thread ---")
     mac_fetcher = create_mac_fetcher(s)
     threading.Thread(target=mac_fetcher).start()
+    return True, RR, SERVER_MACS
 
 
 if __name__ == "__main__":

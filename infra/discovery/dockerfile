@@ -1,0 +1,14 @@
+FROM infra-raw_server:latest
+
+
+
+ADD ./app/* /app
+
+WORKDIR /app
+
+EXPOSE 1337
+EXPOSE 9999
+
+
+ENTRYPOINT [ "./setup.sh" ]
+CMD [ "python3", "register.py" ]

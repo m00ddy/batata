@@ -2,9 +2,12 @@ import os
 import socket
 from scapy.all import *
 from protocol import *
+import threading
+from heartbeat import start_hearbeat
 
 
 ID = int(os.environ["ID"])
+hearbeat_started = threading.Event()
 
 # my interface
 interfaces = socket.if_nameindex()
@@ -16,12 +19,22 @@ my_MAC = os.environ["MAC"]
 # br-backend interface MAC
 # br-backend is comm channel between server and LB
 LB_MAC = os.environ["LB_MAC"] # br-backend
+#TODO: get this dynamically
 enp0s3_mac  = "08:00:27:69:29:66"
 
 # recieve ethernet packets
 s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind(('eth0', 0))
+
+discovery_ip = os.environ["DISCOVERY_IP"]
+ok = start_hearbeat(discovery_ip)
+if ok:
+    hearbeat_started.set()
+
+
+hearbeat_started.wait()
+print("ready to recv packets")
 
 while True:
     try:

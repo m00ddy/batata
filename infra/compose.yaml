@@ -1,22 +1,31 @@
 version: '3'
 
 services:
-  # zookeeper node for discovery service
-  # zookeeper:
-    # image: zookeeper:3.5
-    # container_name: zookeeper
-    # hostname: zookeeper
-    # restart: always
-    # ports:
-    #   - 2181:2181
-    # environment:
-    #   ZOO_MY_ID: 1
-    #   ZOO_SERVERS: server.1=zookeeper:2888:3888
-    # networks:
-    #   backend:
-    #     ipv4_address: "172.16.238.22"
+  discovery:
+    build:
+      context: ./discovery
+
+    ports:
+      - 1337:1337
+      - 9999:9999
+    
+    volumes:
+      - ./discovery/app/:/app
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost"]
+    #   interval: 60s
+    #   retries: 0
+    #   timeout: 1s
+    # network_mode: bridge 
+    networks:
+      backend:
+        ipv4_address: 172.16.238.100
+      # - default
 
   raw_server:
+    # depends_on:
+    #   discovery:
+    #     condition: service_started
     build:
       context: ./server
   
@@ -36,6 +45,10 @@ services:
       - backend
 
   raw_server-2:
+    depends_on:
+      discovery:
+        condition: service_started
+
     build:
       context: ./server
   

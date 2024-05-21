@@ -24,8 +24,9 @@ def every(delay, callback:callable):
 
 def grabber(conn:socket.socket):
     def grab():
-       # recieve a LIST
        print("[grabber] sending ready")
+       # ready -->
+       # <-- MAC address list
        conn.send(b'ready')
        msg = conn.recv(2000) 
        msg = json.loads(msg.decode())

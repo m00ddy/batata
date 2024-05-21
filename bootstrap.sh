@@ -29,7 +29,7 @@ export LB_MAC="$hwaddr"
 echo "br-backend MAC: $LB_MAC"
 
 # get docker containers up
-docker compose -f ./infra/compose.yaml up --force-recreate -d
+docker compose -f ./infra/compose.yaml up --force-recreate -d --remove-orphans
 if [ $? -eq 0 ]; then
     echo "running load balancer"
     (sudo python3 load-balancer.py)
