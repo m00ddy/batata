@@ -1,8 +1,13 @@
+# global SERVER_MACS
+# global RR
+
 import socket
 import psutil
 from scapy.all import *
 from utils.protocol import *
-from utils.discovery_consumer import *
+# from utils.discovery_consumer import *
+import utils.discovery_consumer as dc
+from utils.roundrobin import RoundRobin
 import select
 import threading
 
@@ -57,7 +62,14 @@ except KeyError as e:
 
 
 # takes care of fetching and updating server address list; just call next(RR) to get next server addr
-ok, RR, SERVER_MACS = consume_discovery_service()
+SERVER_MACS= []
+RR= RoundRobin(SERVER_MACS)
+
+print("defining global variables")
+print(f"SERVER MACS ({id(SERVER_MACS)})", SERVER_MACS)
+print(RR)
+
+ok = dc.consume_discovery_service(RR, SERVER_MACS)
 if ok:
     discovery_consumed_event.set()
     print("OK")
@@ -66,9 +78,10 @@ if ok:
 # discovery_consumed_event.wait()
 # while True:
 #     time.sleep(1)
-#     print("LOADBALACNER MACLIST", SERVER_MACS)
-#     next_addr = next(RR)
-#     print(next_addr) 
+#     with dc.lock:
+#         print("LOADBALACNER MACLIST", SERVER_MACS)
+#         next_addr = next(RR)
+#         print(next_addr) 
 
 def event_loop():
     discovery_consumed_event.wait()
@@ -89,9 +102,9 @@ def event_loop():
 
         # select a server
         server_ether_addr = None
-        with lock:
+        with dc.lock:
             server_ether_addr = next(RR)
-            print("next server: ", server_ether_addr)
+            print("next server: ")
         
         print("sending to ", server_ether_addr)
 
@@ -122,6 +135,8 @@ def event_loop():
             continue
 
         print(pkt)
+        if ARP in pkt:
+            continue
         print(pkt.load)
         print("unpacking result")
         res, srv_id= struct.unpack("!qB", pkt.load)

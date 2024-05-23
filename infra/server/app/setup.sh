@@ -21,7 +21,7 @@ echo "MAC: $MAC"
 echo "DISCOVERY_IP: $DISCOVERY_IP"
 
 # until discovery is up
-sleep 1
+# sleep 1
 
 # start app.py
 exec "$@"

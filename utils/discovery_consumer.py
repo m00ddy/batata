@@ -13,31 +13,23 @@ DISCOVERY_IP = "172.16.238.100"
 DISCOVERY_PORT = 9999
 DISCOVERY_ADDR = (DISCOVERY_IP, DISCOVERY_PORT)
 
-with lock:
-    # MAAAAAAAAAAAAACS
-    SERVER_MACS = None
 
-    # roundrobinrevolver object
-    RR = None
-
-
-
-def every(delay:int,  callback:callable):
-    global SERVER_MACS
-    global RR
-
+def every(delay:int,  callback:callable, rr:RoundRobin, server_macs:list):
     next_time = time.time() + delay
     while True:
         time.sleep(max(0, next_time - time.time()))
 
         try:
+            fresh_list = callback()
             with lock:
-                SERVER_MACS = callback()
-                RR.update(SERVER_MACS)
+                server_macs.clear()
+                server_macs.extend(fresh_list)
+                rr.update(server_macs)
 
                 print("[fetcher] local list updated")
-                print(SERVER_MACS)
-                print("NEXT RR", next(RR))
+                print(server_macs)
+                print("[fetcher] updated RR")
+                print(rr, rr.addrs)
                 print()
 
         except Exception as e:
@@ -60,65 +52,60 @@ def fetch_mac_list_from_register(s:socket.socket) -> callable:
 
 def init_mac_list(s: socket.socket) -> list:
     print("[fetcher] sending init")
-
-    #! backhanded approach
-    # time.sleep(2)
-
+    time.sleep(3)
     s.send(b'init')
     msg = s.recv(2000) 
     msg = json.loads(msg.decode())
     print("[fetcher] mac list initialized to: ", msg.get("list")) 
+    if not msg.get("list"):
+        time.sleep(1)
+        init_mac_list(s)
     return msg.get("list")
 
-def create_mac_fetcher(s: socket.socket) -> callable:
+def create_mac_fetcher(s: socket.socket, rr:RoundRobin, server_macs:list) -> callable:
 
-    f = fetch_mac_list_from_register(s)
+    callback = fetch_mac_list_from_register(s)
     interval = 5  #! 5 for testing, 60 in prod
 
     print(f"register socket ready; fetch interval = {interval} seconds")
 
-    return lambda: every(interval, f)
+    return lambda: every(interval, callback, rr, server_macs)
 
-def init_consumer() -> (socket.socket, list, object,bool):
-
+def init_consumer(rr:RoundRobin, server_macs:list) -> (socket.socket, list, object,bool):
     # connect to register
-    print("creating register socket...")
+    print("[init] creating register socket...")
 
     # socket to discovery service
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(DISCOVERY_ADDR)
-
-
-    server_macs = list(init_mac_list(s))
-    rr = RoundRobin(server_macs)
+    print("[init] connected to discovery service")
+    
+    server_macs.extend(list(init_mac_list(s)))
+    rr.update(server_macs)
 
     try:
-        print(next(rr))
-        print("[consumer]", server_macs)
-        print("[consumer]", rr)
-        print("[consumer] next rr", next(rr))
+        print("[init]", server_macs)
+        print("[init]", rr, rr.addrs)
     except Exception as e:
-        print("[consumer]", e)
+        print("[init EXCEPTION]", e)
 
     
-    return s, server_macs, rr, True
+    return s, True
 
-def consume_discovery_service() -> (bool, object, list):
-    s, server_macs, rr, ok = init_consumer()
+def consume_discovery_service(rr:RoundRobin, server_macs:list) -> (bool):
+    s, ok = init_consumer(rr, server_macs)
     if ok:
         print("discovery consumer init complete") 
-        global SERVER_MACS
-        SERVER_MACS = server_macs
-        global RR
-        RR = rr
         init_complete.set()
     
-    init_complete.wait()
-    
+    mac_fetcher = create_mac_fetcher(s, rr, server_macs)
+    t = threading.Thread(target=mac_fetcher)
+
+    init_complete.wait() 
     print("--- launching discovery consumer thread ---")
-    mac_fetcher = create_mac_fetcher(s)
-    threading.Thread(target=mac_fetcher).start()
-    return True, RR, SERVER_MACS
+    t.start()
+
+    return True
 
 
 if __name__ == "__main__":

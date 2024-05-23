@@ -23,9 +23,9 @@ services:
       # - default
 
   raw_server:
-    # depends_on:
-    #   discovery:
-    #     condition: service_started
+    depends_on:
+      discovery:
+        condition: service_started
     build:
       context: ./server
   

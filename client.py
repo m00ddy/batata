@@ -3,15 +3,20 @@
 import socket
 import time
 
-SERVER = input("enter server ip (default 192.168.1.104): ")
-if SERVER == "":
-    SERVER = "192.168.1.104"
-PORT = 8080
-ADDR = (SERVER, PORT)
+# SERVER = input("enter server ip (default localhost): ")
+# if SERVER == "":
+#     SERVER = "localhost"
+# PORT = 8080
+# ADDR = (SERVER, PORT)
+
+hostname, port = input("enter service hostname (example.com:1337): ").split(":") 
+addr_list, = socket.getaddrinfo(hostname, port, type=socket.SOCK_DGRAM)
+*_, ADDR = addr_list
+print(f"[DNS] resolved {hostname}:{port} to {ADDR}")
 
 # UDP socket
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-    s.settimeout(3)
+    s.settimeout(5)
     sdata_list = [
         "500+500",
         "1337*3",

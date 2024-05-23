@@ -5,12 +5,6 @@
 
 # print(f"os environ MAC: {os.environ['MAC']}")
 
-# try:
-#     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#     s.connect((HOST, PORT))
-#     s.send(my_MAC.encode())
-# except Exception as e:
-#     print(e)
 import random
 import socket
 import traceback

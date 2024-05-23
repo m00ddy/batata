@@ -8,8 +8,8 @@ class RoundRobin:
         return self
     
     def __next__(self): 
-        if not self.addrs:
-            return -1
+        if not self.addrs and not self.buffer:
+            return
         addr = self.addrs[self.idx]
         self.idx = (self.idx+1) % len(self.addrs)
 
@@ -22,6 +22,9 @@ class RoundRobin:
 
     def update(self, new_list:list):
         self.buffer = new_list
+        # if init to an empty list, make buffer main list
+        if not self.addrs:
+            self.addrs = self.buffer
 
 
     def cycle(self, new_list):
