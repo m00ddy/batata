@@ -33,6 +33,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         print("sending ", sdata)
         data, addr = s.recvfrom(2000)
         print(">> ", data)
+    print("now you can try it. stick to the protocol format [n(+|*)n]")
+    while True:
+        sdata = input(">> ")
+        s.sendto(sdata.encode(), ADDR)
+        print("sending ", sdata)
+        data, addr = s.recvfrom(2000)
+        print(">> ", data.decode())
 
 # usage_string = "usage:\n\tcalc.py add 4 5\n\tcalc.py mult 5 6"
 

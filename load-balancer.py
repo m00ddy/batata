@@ -123,6 +123,9 @@ def event_loop():
                 if srv_socket in ready:
                     data = srv_socket.recv(2000)
                     current_pkt = Ether(data)
+                    if ARP in current_pkt:
+                        print("\nARP PACKET IGNORE\n")
+                        continue
                     
                     if current_pkt.src == server_ether_addr :
                         rcv_data = data
@@ -135,8 +138,6 @@ def event_loop():
             continue
 
         print(pkt)
-        if ARP in pkt:
-            continue
         print(pkt.load)
         print("unpacking result")
         res, srv_id= struct.unpack("!qB", pkt.load)
