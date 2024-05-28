@@ -3,16 +3,15 @@
 import socket
 import time
 
-# SERVER = input("enter server ip (default localhost): ")
-# if SERVER == "":
-#     SERVER = "localhost"
-# PORT = 8080
-# ADDR = (SERVER, PORT)
-
-hostname, port = input("enter service hostname (example.com:1337): ").split(":") 
-addr_list, = socket.getaddrinfo(hostname, port, type=socket.SOCK_DGRAM)
-*_, ADDR = addr_list
-print(f"[DNS] resolved {hostname}:{port} to {ADDR}")
+ADDR = None
+try:
+    hostname, port = input("enter service hostname (example.com:1337): ").split(":") 
+    addr_list, = socket.getaddrinfo(hostname, port, type=socket.SOCK_DGRAM)
+    *_, ADDR = addr_list
+except Exception as e:
+    print(e)
+finally:
+    print(f"[DNS] resolved {hostname}:{port} to {ADDR}")
 
 # UDP socket
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
@@ -35,6 +34,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         print(">> ", data)
     print("now you can try it. stick to the protocol format [n(+|*)n]")
     while True:
+        # TODO: enforce each numbber is only 4 bytes
+
         sdata = input(">> ")
         s.sendto(sdata.encode(), ADDR)
         print("sending ", sdata)
@@ -58,4 +59,3 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
 #         print(usage_string)
 
 
-# # TODO: enforce each numbber is only 4 bytes
