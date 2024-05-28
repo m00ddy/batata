@@ -1,5 +1,5 @@
 # client code goes here
-# import sys
+import sys
 import socket
 import time
 
@@ -37,6 +37,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         # TODO: enforce each numbber is only 4 bytes
 
         sdata = input(">> ")
+        if sdata == "exit":
+            sys.exit(0)
         s.sendto(sdata.encode(), ADDR)
         print("sending ", sdata)
         data, addr = s.recvfrom(2000)

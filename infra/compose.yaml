@@ -11,11 +11,6 @@ services:
     
     volumes:
       - ./discovery/app/:/app
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost"]
-    #   interval: 60s
-    #   retries: 0
-    #   timeout: 1s
     # network_mode: bridge 
     networks:
       backend:
@@ -38,7 +33,7 @@ services:
     
     environment:
       ID: 1
-      LB_MAC: ${LB_MAC}
+      BR_BACKEND: ${BR_BACKEND}
 
     mac_address: 00:22:22:22:22:22
     networks:
@@ -61,7 +56,8 @@ services:
     
     environment:
       ID: 2
-      LB_MAC: ${LB_MAC}
+      BR_BACKEND: ${BR_BACKEND}
+      
 
     mac_address: 00:33:33:33:33:33
     networks:
@@ -69,10 +65,10 @@ services:
 
 networks:
   backend:
-    # join existing network, (i build it earlier)
+    # join existing network, (i built it earlier)
     external: true
 
-    # old configuration
+    # old configuration, now created in bootstrap.sh
 
     # internal: true
     # driver: bridge

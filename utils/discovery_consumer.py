@@ -5,13 +5,15 @@ import time
 import json
 import threading
 from utils.roundrobin import RoundRobin
+from utils.getaddrinfo import resolve
 
 lock = threading.Lock()
 init_complete = threading.Event()
 
-DISCOVERY_IP = "172.16.238.100"
+DISCOVERY_HOSTNAME = "discovery.batata"
 DISCOVERY_PORT = 9999
-DISCOVERY_ADDR = (DISCOVERY_IP, DISCOVERY_PORT)
+DISCOVERY_SOCKTYPE = socket.SOCK_STREAM
+DISCOVERY_ADDR = resolve(DISCOVERY_HOSTNAME, DISCOVERY_PORT, DISCOVERY_SOCKTYPE)
 
 
 def every(delay:int,  callback:callable, rr:RoundRobin, server_macs:list):
@@ -20,16 +22,18 @@ def every(delay:int,  callback:callable, rr:RoundRobin, server_macs:list):
         time.sleep(max(0, next_time - time.time()))
 
         try:
+            print("**************************************")
+            print("DISCVERY CONSUMER UPDATE")
             fresh_list = callback()
             with lock:
                 server_macs.clear()
                 server_macs.extend(fresh_list)
                 rr.update(server_macs)
 
-                print("[fetcher] local list updated")
-                print(server_macs)
-                print("[fetcher] updated RR")
+                print("[DC] local list updated: ", server_macs)
+                print("[DC] updated RR")
                 print(rr, rr.addrs)
+                print("**************************************")
                 print()
 
         except Exception as e:
@@ -40,7 +44,7 @@ def every(delay:int,  callback:callable, rr:RoundRobin, server_macs:list):
 
 def fetch_mac_list_from_register(s:socket.socket) -> callable:
     def fetch():
-       print("[fetcher] sending ready")
+       print("[DC] sending ready")
        # ready -->
        # <-- MAC address list
        s.send(b'ready')
@@ -51,12 +55,12 @@ def fetch_mac_list_from_register(s:socket.socket) -> callable:
     return fetch
 
 def init_mac_list(s: socket.socket) -> list:
-    print("[fetcher] sending init")
+    print("[DC] sending init")
     time.sleep(3)
     s.send(b'init')
     msg = s.recv(2000) 
     msg = json.loads(msg.decode())
-    print("[fetcher] mac list initialized to: ", msg.get("list")) 
+    print("[DC] mac list initialized to: ", msg.get("list")) 
     if not msg.get("list"):
         time.sleep(1)
         init_mac_list(s)
@@ -73,21 +77,21 @@ def create_mac_fetcher(s: socket.socket, rr:RoundRobin, server_macs:list) -> cal
 
 def init_consumer(rr:RoundRobin, server_macs:list) -> (socket.socket, list, object,bool):
     # connect to register
-    print("[init] creating register socket...")
+    print("[DC init] creating register socket...")
 
     # socket to discovery service
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(DISCOVERY_ADDR)
-    print("[init] connected to discovery service")
+    print("[DC init] connected to discovery service")
     
     server_macs.extend(list(init_mac_list(s)))
     rr.update(server_macs)
 
     try:
-        print("[init]", server_macs)
-        print("[init]", rr, rr.addrs)
+        print("[DC init]", server_macs)
+        print("[DC init]", rr, rr.addrs)
     except Exception as e:
-        print("[init EXCEPTION]", e)
+        print("[DC init EXCEPTION]", e)
 
     
     return s, True

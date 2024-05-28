@@ -62,13 +62,10 @@ except KeyError as e:
     print(e)
 
 
-# takes care of fetching and updating server address list; just call next(RR) to get next server addr
+# dc.consume_discovery_service takes care of fetching and updating server address list.
+# just call next(RR) to get next server address
 SERVER_MACS= []
 RR= RoundRobin(SERVER_MACS)
-
-# print("defining global variables")
-# print(f"SERVER MACS ({id(SERVER_MACS)})", SERVER_MACS)
-# print(RR)
 
 ok = dc.consume_discovery_service(RR, SERVER_MACS)
 if ok:
@@ -102,7 +99,7 @@ def event_loop():
         print("sending to ", server_ether_addr)
 
         # assemble protocol packet and send to server
-        ether_frame = Ether(dst=server_ether_addr)/Raw(load=proto_bytes)
+        ether_frame = Ether(src="00:11:11:11:11:11", dst=server_ether_addr)/Raw(load=proto_bytes)
         sendp(ether_frame, 'br-backend')
 
         # reply from server

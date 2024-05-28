@@ -24,10 +24,9 @@ def every(delay, callback:callable):
 
         next_time += (time.time() - next_time) // delay*delay + delay
 
-
 def beat_wrapper(conn: socket.socket, my_mac: str):
     def beat():
-        print("--|/\/--")
+        print("ﮩ٨ـﮩﮩ٨ـ🖤ﮩ٨ـﮩﮩ٨ـ")
         conn.send(my_mac.encode())
     return beat
 
