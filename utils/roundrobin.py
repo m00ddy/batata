@@ -8,9 +8,12 @@ class RoundRobin:
         return self
     
     def __next__(self): 
-        if not self.addrs and not self.buffer:
-            return
-        addr = self.addrs[self.idx]
+        # if not self.addrs and not self.buffer:
+        #     return
+        try:
+            addr = self.addrs[self.idx]
+        except IndexError:
+            addr = self.addrs[0]
         self.idx = (self.idx+1) % len(self.addrs)
 
         # check if at list's end, update list
@@ -22,6 +25,8 @@ class RoundRobin:
 
     def update(self, new_list:list):
         self.buffer = new_list
+        if self.idx == 0:
+            self.addrs = self.buffer
         # if init to an empty list, make buffer main list
         if not self.addrs:
             self.addrs = self.buffer

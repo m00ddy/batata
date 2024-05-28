@@ -15,8 +15,6 @@ echo "environment variable BR_BACKEND set to: $BR_BACKEND"
 mac_address=$(ip link show eth0 | awk '/ether/ {print $2}')
 export MAC=$mac_address
 
-export DISCOVERY_IP="172.16.238.100"
-
 echo "MAC: $MAC"
 echo "DISCOVERY_IP: $DISCOVERY_IP"
 

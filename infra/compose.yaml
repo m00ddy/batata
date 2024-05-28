@@ -34,6 +34,7 @@ services:
     environment:
       ID: 1
       BR_BACKEND: ${BR_BACKEND}
+      DISCOVERY_IP: "172.16.238.100"
 
     mac_address: 00:22:22:22:22:22
     networks:
@@ -56,10 +57,35 @@ services:
     
     environment:
       ID: 2
-      BR_BACKEND: ${BR_BACKEND}
-      
+      BR_BACKEND: ${BR_BACKEND} 
+      DISCOVERY_IP: "172.16.238.100"
 
     mac_address: 00:33:33:33:33:33
+    networks:
+      - backend
+
+  raw_server-3:
+    depends_on:
+      discovery:
+        condition: service_started
+
+    # image: infra-raw_server
+  
+    build:
+      context: ./server
+    ports:
+      - 8080:8080
+      - 4444:4444
+
+    volumes:
+      - ./server/app:/app
+    
+    environment:
+      ID: 3
+      BR_BACKEND: ${BR_BACKEND} 
+      DISCOVERY_IP: "172.16.238.100"
+
+    mac_address: 00:44:44:44:44:44
     networks:
       - backend
 

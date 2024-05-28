@@ -21,7 +21,7 @@ EXPOSE 8080
 EXPOSE 4444
 
 # make setup.sh work
-RUN chmod 755 ./setup.sh
+# RUN chmod 755 ./setup.sh
 
 ENTRYPOINT [ "./setup.sh" ]
 CMD [ "python3", "app.py" ]

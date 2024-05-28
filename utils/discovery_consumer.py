@@ -83,7 +83,7 @@ def init_consumer(rr:RoundRobin, server_macs:list) -> (socket.socket, list, obje
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(DISCOVERY_ADDR)
     print("[DC init] connected to discovery service")
-    
+    server_macs.clear() 
     server_macs.extend(list(init_mac_list(s)))
     rr.update(server_macs)
 

@@ -92,9 +92,12 @@ def event_loop():
 
         # choose a server
         server_ether_addr = None
-        with dc.lock:
-            server_ether_addr = next(RR)
-            print("next server: ", server_ether_addr)
+        try:
+            with dc.lock:
+                server_ether_addr = next(RR)
+                print("next server: ", server_ether_addr)
+        except IndexError:
+                print("index error in round robin")
         
         print("sending to ", server_ether_addr)
 
@@ -131,9 +134,15 @@ def event_loop():
             continue
         
         # lots of printing
-        print(pkt)
+        print("packet: ", pkt)
         print(pkt.load)
-        result = lb_to_client(pkt.load)
+        try:
+            result = lb_to_client(pkt.load)
+        except Exception as e:
+            print("error getting result from server")
+            print(e)
+            result = b"internal server error"
+
         print(f"redirecting {result.decode()} to client...")
         client_socket.sendto(result, client_addr)
 
