@@ -1,0 +1,7 @@
+- launch project with bootstrap.sh
+- docker ps
+- docker compose logs -f
+- connect with client, send multiple requests.
+- stop 1 server, then another.
+- docker compose up -d --no-recreate infra-raw_server -- run one of the servers again
+- connect with another client, showcase round robin

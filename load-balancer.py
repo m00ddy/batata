@@ -78,7 +78,10 @@ def event_loop():
         print("======================")
         # recv data from client
         client_data, client_addr = client_socket.recvfrom(2000)
+        threading.Thread(target=handle_client, args=(client_data, client_addr)).start()
 
+
+def handle_client(client_data, client_addr):
         # we assume data coming from client follows protocol format: b'4+5'
         print("received: ", client_data, "from: ", client_addr)
 
@@ -88,7 +91,7 @@ def event_loop():
         except Exception as e:
             print(e)
             client_socket.sendto(str(e).encode(), client_addr)
-            continue
+            return
 
         # choose a server
         server_ether_addr = None
@@ -131,7 +134,7 @@ def event_loop():
         except TimeoutError as err:
             print(err)
             client_socket.sendto("timeout, server seems to be offline. please try again".encode(), client_addr)
-            continue
+            return
         
         # lots of printing
         print("packet: ", pkt)
