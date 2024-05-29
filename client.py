@@ -2,16 +2,10 @@
 import sys
 import socket
 import time
+from utils.getaddrinfo import resolve
 
-ADDR = None
-try:
-    hostname, port = input("enter service hostname (example.com:1337): ").split(":") 
-    addr_list, = socket.getaddrinfo(hostname, port, type=socket.SOCK_DGRAM)
-    *_, ADDR = addr_list
-except Exception as e:
-    print(e)
-finally:
-    print(f"[DNS] resolved {hostname}:{port} to {ADDR}")
+hostname, port = input("enter service hostname (example.com:1337): ").split(":") 
+ADDR = resolve(hostname, port, socket.SOCK_DGRAM)
 
 # UDP socket
 with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
