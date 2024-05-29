@@ -15,7 +15,7 @@ def prepare_tcp_socket(port: int, ip:str="0.0.0.0") -> socket.socket:
     return s
 
 
-# listen for heartbeats from servers, and maintain a local list of live MAC addresses
+# listen for heartbeats from servers, and maintain a local list of live servers MAC addresses
 def generic_listener(port:int, target_func:callable, name:str="generic"):
     # live servers send their MACs here
     s = prepare_tcp_socket(port=port)

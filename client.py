@@ -38,20 +38,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         data, addr = s.recvfrom(2000)
         print(">> ", data.decode())
 
-# usage_string = "usage:\n\tcalc.py add 4 5\n\tcalc.py mult 5 6"
-
-# try:
-#     op = sys.argv[1]
-#     if op not in ["add", "mult"]:
-#         raise ValueError("invalid operation")
-#     if op == None:
-#         raise ValueError("missing operation")
-    
-# except ValueError as err:
-#     print(err)
-# except IndexError as err:
-#     print("please provide an operation")
-# finally:
-#         print(usage_string)
-
 
