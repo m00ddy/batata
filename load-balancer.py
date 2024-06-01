@@ -75,10 +75,14 @@ if ok:
 def event_loop():
     discovery_consumed_event.wait()
     while True:
-        print("======================")
-        # recv data from client
-        client_data, client_addr = client_socket.recvfrom(2000)
-        threading.Thread(target=handle_client, args=(client_data, client_addr)).start()
+        try:
+            print("======================")
+            # recv data from client
+            client_data, client_addr = client_socket.recvfrom(2000)
+            threading.Thread(target=handle_client, args=(client_data, client_addr)).start()
+        except KeyboardInterrupt as e:
+            print(e, "baaaaaaaaaaam")
+            sys.exit(0)
 
 
 def handle_client(client_data, client_addr):
