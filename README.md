@@ -1,4 +1,4 @@
-this project is for network applications class. it involves socket programming, some distributed systems concepts, and operating Docker, along with some system design.
+disclaimer: this project is for network applications class. it involves socket programming, some distributed systems concepts, and operating Docker, along with some system design.
 
 here's a little story on how it goes:
 
