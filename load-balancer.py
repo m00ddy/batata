@@ -6,6 +6,10 @@ import utils.discovery_consumer as dc
 from utils.roundrobin import RoundRobin
 import select
 import threading
+from utils.logger import logger
+
+# TODO: printing --> logging
+logger.name = "load-balancer"
 
 # globals
 HOST = "0.0.0.0"
@@ -14,6 +18,8 @@ UDP_ADDR = (HOST, UDP_SOCK_PORT)
 
 TCP_SOCK_PORT = 7070
 TCP_ADDR = (HOST, TCP_SOCK_PORT)
+
+LB_MAC = "00:11:11:11:11:11" 
 
 TIMEOUT = 3
 
@@ -34,10 +40,9 @@ client_socket.bind(UDP_ADDR)
 
 # check if br-backend in interfaces
 interfaces = socket.if_nameindex()
-print(interfaces)
 for (i, name) in interfaces:
     if name == "br-backend":
-        print(f"interface {name} is up")
+        logger.info(f"interface {name} is up")
 
 # obtain MAC and IP for br-backend
 try:
@@ -46,10 +51,10 @@ try:
     my_if_addrs = psutil.net_if_addrs()['br-backend']
     for item in my_if_addrs:
         if item.family == socket.AF_INET:
-            print("br-backend IP", item.address)
+            logger.info(f"br-backend IP {item.address}")
             my_IP = item.address
         if item.family == socket.AF_PACKET:
-            print("br-backend MAC", item.address)
+            logger.info(f"br-backend MAC {item.address}")
             my_MAC = item.address
 
     # RAW socket: load balancer <--> servers
@@ -58,8 +63,8 @@ try:
     srv_socket.settimeout(TIMEOUT)
     srv_socket.bind(('br-backend', 0))
 except KeyError as e:
-    print("interface br-backend not found")
-    print(e)
+    logger.warning("interface br-backend not found")
+    logger.warning(e)
 
 
 # dc.consume_discovery_service takes care of fetching and updating server address list.
@@ -70,7 +75,7 @@ RR= RoundRobin(SERVER_MACS)
 ok = dc.consume_discovery_service(RR, SERVER_MACS)
 if ok:
     discovery_consumed_event.set()
-    print("OK")
+    logger.info("OK")
 
 def event_loop():
     discovery_consumed_event.wait()
@@ -81,7 +86,7 @@ def event_loop():
             client_data, client_addr = client_socket.recvfrom(2000)
             threading.Thread(target=handle_client, args=(client_data, client_addr)).start()
         except KeyboardInterrupt as e:
-            print(e, "baaaaaaaaaaam")
+            logger.warning("baaaaaaaaaaam")
             sys.exit(0)
 
 
@@ -109,7 +114,7 @@ def handle_client(client_data, client_addr):
         print("sending to ", server_ether_addr)
 
         # assemble protocol packet and send to server
-        ether_frame = Ether(src="00:11:11:11:11:11", dst=server_ether_addr)/Raw(load=proto_bytes)
+        ether_frame = Ether(src=LB_MAC, dst=server_ether_addr)/Raw(load=proto_bytes)
         sendp(ether_frame, 'br-backend')
 
         # reply from server

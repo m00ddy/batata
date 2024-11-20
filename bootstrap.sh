@@ -9,7 +9,9 @@ create_docker_network() {
     --opt com.docker.network.bridge.name=br-backend \
     --ipam-driver=default \
     --ipam-opt subnet=172.16.238.0/24 \
-    "$1"
+    "$1" > /dev/null
+
+    echo "[BOOT] docker network $1 created"
 }
 # extract interface interface MAC address
 get_if_hwaddr(){
@@ -35,7 +37,7 @@ add_discovery_dns_record
 
 hwaddr=$(get_if_hwaddr $IF_NAME)
 export BR_BACKEND="$hwaddr"
-echo "br-backend MAC: $BR_BACKEND"
+echo "[BOOT] interface br-backend MAC: $BR_BACKEND"
 
 
 # get docker containers up

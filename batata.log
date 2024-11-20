@@ -1,0 +1,5 @@
+06-05 10:56 load-balancer INFO     interface br-backend is up
+06-05 10:56 load-balancer INFO     br-backend IP 172.16.238.1
+06-05 10:56 load-balancer INFO     br-backend MAC 02:42:f7:e3:cf:f2
+06-05 10:56 load-balancer INFO     OK
+06-05 11:35 load-balancer WARNING  baaaaaaaaaaam

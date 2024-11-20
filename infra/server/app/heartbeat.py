@@ -1,9 +1,4 @@
 # send MAC address as a heartbeat to register
-#! hardcoded
-# HOST = "192.168.25.150"
-# PORT = 1337
-
-# print(f"os environ MAC: {os.environ['MAC']}")
 
 import random
 import socket
@@ -12,7 +7,7 @@ import time
 import threading
 import os
 
-def every(delay, callback:callable):
+def every(delay: int, callback:callable):
     next_time = time.time() + delay
     while True:
         time.sleep(max(0, next_time - time.time()))
@@ -24,7 +19,7 @@ def every(delay, callback:callable):
 
         next_time += (time.time() - next_time) // delay*delay + delay
 
-def beat_wrapper(conn: socket.socket, my_mac: str):
+def beat_wrapper(conn: socket.socket, my_mac: str) -> callable:
     def beat():
         print("ﮩ٨ـﮩﮩ٨ـ🖤ﮩ٨ـﮩﮩ٨ـ")
         conn.send(my_mac.encode())
@@ -41,7 +36,8 @@ def init_hearbeat(discovery_ip:str) -> (socket.socket, str):
 def start_hearbeat(discovery_ip:str) -> bool:
     s, my_mac = init_hearbeat(discovery_ip)
     echo = beat_wrapper(s, my_mac)
-    threading.Thread(target=lambda: every(3, echo)).start()
+    delay = 3
+    threading.Thread(target=lambda: every(delay, echo)).start()
     return True
 
 
